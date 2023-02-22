@@ -1,10 +1,10 @@
 import sys
 import os
 import msvcrt
-import weakref
+from time import time, ctime
 
 from enum import Enum, auto
-from typing import List, Tuple
+from typing import Callable, List, Tuple
 
 class Anchor(Enum):
 	UPPER_LEFT = auto(),
@@ -82,19 +82,25 @@ class Text:
 		self.anchor = anchor
 		self.lines: List[str] = []
 		self.is_dirty = True
+		self.on_main_loop: List[Callable] = []
 
 		self.set_text(text)
+
+	def add_main_loop_even(self, event: Callable):
+		self.on_main_loop.append(event)
 
 	@classmethod
 	def mainloop(cls):
 		if get_screen_size() != cls.Screen_size:
 			cls.Screen_size = get_screen_size()
 			clear_screen()
-			return
 
 		should_flush = False
 
 		for instance in cls.instances:
+			for event in instance.on_main_loop:
+				event()
+
 			if not instance.is_dirty: continue
 
 			should_flush = True
@@ -201,7 +207,17 @@ class Text:
 			sys.stdout.write(f"\033[{rel_y};{rel_x}f")
 			sys.stdout.write(' ' * self.get_line_len(line))
 		
-	
+class Timer(Text):
+	def __init__(self, label: str = "{:0.2f}", x: int = 0, y: int = 0, anchor: Anchor = Anchor.CENTER):
+		super().__init__(label, x, y, anchor)
+
+		self.label = label
+		self.start_time = time()
+
+		self.add_main_loop_even(self.tick)
+
+	def tick(self):
+		self.set_text(self.label.format(time() - self.start_time))
 
 def handle_input() -> bytes:
 	if not msvcrt.kbhit(): return None
@@ -212,18 +228,20 @@ def handle_input() -> bytes:
 	
 	return key
 
-try:
+def main():
 	hide_cursor()
 	clear_screen()
 
-	hello_text = Text("""   _____            __  _                _    ___                  ___            __  _                  __
+	hello_text = Text("""<b><fg=green>     _____            __  _                _    ___                  ___            __  _                  __
   / ___/____  _____/ /_(_)___  ____ _   | |  / (_)______  ______ _/ (_)________ _/ /_(_)___  ____  _____/ /
   \__ \/ __ \/ ___/ __/ / __ \/ __ `/   | | / / / ___/ / / / __ `/ / / ___/ __ `/ __/ / __ \/ __ \/ ___/ / 
  ___/ / /_/ / /  / /_/ / / / / /_/ /    | |/ / (__  ) /_/ / /_/ / / (__  ) /_/ / /_/ / /_/ / / / (__  )_/  
 /____/\____/_/   \__/_/_/ /_/\__, /     |___/_/____/\__,_/\__,_/_/_/____/\__,_/\__/_/\____/_/ /_/____(_)   
-                            /____/                                                                         """)
+                            /____/                                                                         </fg></b>""")
 	
-	key_display = Text("<b>[Key Display]", anchor=Anchor.LOWER_RIGHT)
+	key_display = Text("<b>[Key Display]</b>", anchor=Anchor.LOWER_RIGHT)
+
+	Timer("<b>Random Timer: <fg=cyan>{:0.2f}</fg></b>", anchor=Anchor.UPPER_CENTER)
 
 	Text("<b>Bold</b> <i>Italics</i> <u>Underline</u> <s>Strikethrough</s>", anchor=Anchor.LOWER_CENTER)
 	Text("<b><i><fg=red>RED TEXT</fg></i></b>", y=1, anchor=Anchor.LOWER_CENTER)
@@ -244,8 +262,12 @@ try:
 			hello_text.move(0, -1)
 
 		Text.mainloop()
-except KeyboardInterrupt:
-	pass
-finally:
-	show_cursor()
-	print("\n")
+
+if __name__ == '__main__':
+	try:
+		main()
+	except KeyboardInterrupt:
+		pass
+	finally:
+		show_cursor()
+		print("\n")
