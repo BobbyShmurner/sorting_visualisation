@@ -82,12 +82,17 @@ class Text:
 		self.anchor = anchor
 		self.lines: List[str] = []
 		self.is_dirty = True
+
 		self.on_main_loop: List[Callable] = []
+		self.on_key_press: List[Callable[[bytes], any]] = []
 
 		self.set_text(text)
 
 	def add_main_loop_even(self, event: Callable):
 		self.on_main_loop.append(event)
+
+	def add_key_press_event(self, event: Callable[[bytes], any]):
+		self.on_key_press.append(event)
 
 	@classmethod
 	def mainloop(cls):
@@ -96,8 +101,13 @@ class Text:
 			clear_screen()
 
 		should_flush = False
+		key_pressed = handle_input()
 
 		for instance in cls.instances:
+			if key_pressed != None:
+				for event in instance.on_key_press:
+					event(key_pressed)
+
 			for event in instance.on_main_loop:
 				event()
 
@@ -219,6 +229,45 @@ class Timer(Text):
 	def tick(self):
 		self.set_text(self.label.format(time() - self.start_time))
 
+class MovingText(Text):
+	def __init__(self, text: str = "Moving Text", x: int = 0, y: int = 0, anchor: Anchor = Anchor.CENTER):
+		super().__init__(text, x, y, anchor)
+
+		self.add_key_press_event(self.handle_movement)
+
+	def handle_movement(self, key):
+		if key == b'\x00\x4d':
+			self.move(1, 0)
+		elif key == b'\x00\x4b':
+			self.move(-1, 0)
+		elif key == b'\x00\x50':
+			self.move(0, 1)
+		elif key == b'\x00\x48':
+			self.move(0, -1)
+
+class KeyDisplay(Text):
+	def __init__(self, label: str = "0x{}", x: int = 0, y: int = 0, anchor: Anchor = Anchor.CENTER, default_text: str = None):
+		if default_text == None:
+			default_text = label.format("00")
+
+		super().__init__(default_text, x, y, anchor)
+
+		self.label = label
+		self.add_key_press_event(self.on_press_callback)
+
+	def on_press_callback(self, key):
+		self.set_text(self.label.format(key.hex()))
+class Input(Text):
+	def __init__(self, label: str = "{}", x: int = 0, y: int = 0, anchor: Anchor = Anchor.CENTER):
+		super().__init__(label, x, y, anchor)
+
+		self.label = label
+
+		self.add_main_loop_even(self.display_typing)
+
+	def display_typing(self):
+		self.set_text(self.label.format(time() - self.start_time))
+
 def handle_input() -> bytes:
 	if not msvcrt.kbhit(): return None
 
@@ -232,14 +281,14 @@ def main():
 	hide_cursor()
 	clear_screen()
 
-	hello_text = Text("""<b><fg=green>     _____            __  _                _    ___                  ___            __  _                  __
+	hello_text = MovingText("""<b><fg=green>     _____            __  _                _    ___                  ___            __  _                  __
   / ___/____  _____/ /_(_)___  ____ _   | |  / (_)______  ______ _/ (_)________ _/ /_(_)___  ____  _____/ /
   \__ \/ __ \/ ___/ __/ / __ \/ __ `/   | | / / / ___/ / / / __ `/ / / ___/ __ `/ __/ / __ \/ __ \/ ___/ / 
  ___/ / /_/ / /  / /_/ / / / / /_/ /    | |/ / (__  ) /_/ / /_/ / / (__  ) /_/ / /_/ / /_/ / / / (__  )_/  
 /____/\____/_/   \__/_/_/ /_/\__, /     |___/_/____/\__,_/\__,_/_/_/____/\__,_/\__/_/\____/_/ /_/____(_)   
                             /____/                                                                         </fg></b>""")
 	
-	key_display = Text("<b>[Key Display]</b>", anchor=Anchor.LOWER_RIGHT)
+	key_display = KeyDisplay("<b>[0x{}]</b>", default_text="<b>[Key Display]</b>", anchor=Anchor.LOWER_RIGHT)
 
 	Timer("<b>Random Timer: <fg=cyan>{:0.2f}</fg></b>", anchor=Anchor.UPPER_CENTER)
 
@@ -247,20 +296,6 @@ def main():
 	Text("<b><i><fg=red>RED TEXT</fg></i></b>", y=1, anchor=Anchor.LOWER_CENTER)
 
 	while True:
-		key = handle_input()
-
-		if key != None:
-			key_display.set_text("<b>0x" + key.hex())
-
-		if key == b'\x00\x4d':
-			hello_text.move(1, 0)
-		elif key == b'\x00\x4b':
-			hello_text.move(-1, 0)
-		elif key == b'\x00\x50':
-			hello_text.move(0, 1)
-		elif key == b'\x00\x48':
-			hello_text.move(0, -1)
-
 		Text.mainloop()
 
 if __name__ == '__main__':
