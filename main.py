@@ -226,6 +226,8 @@ try:
 	key_display = Text("<b>[Key Display]", anchor=Anchor.LOWER_RIGHT)
 
 	Text("<b>Bold</b> <i>Italics</i> <u>Underline</u> <s>Strikethrough</s>", anchor=Anchor.LOWER_CENTER)
+	Text("<b><i><fg=red>RED TEXT</fg></i></b>", y=1, anchor=Anchor.LOWER_CENTER)
+
 	while True:
 		key = handle_input()
 
