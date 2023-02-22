@@ -1,4 +1,5 @@
 import sys
+import re
 
 from .prelude import *
 from .anchor import *
@@ -8,6 +9,9 @@ from typing import Callable, List, Tuple
 class Text:
 	instances: List['Text'] = []
 	Screen_size: Tuple[int, int] = get_screen_size()
+
+	ESCAPE_RE = "\033\[\d{1,3}m"
+
 	STYLE_TABLE = {
 		"</r>": "\033[0m",
 
@@ -105,7 +109,6 @@ class Text:
 		for key, value in self.__class__.STYLE_TABLE.items():
 			text = text.replace(key, value)
 
-
 		self.lines = text.split('\n')
 		self.calculate_dimensions()
 
@@ -137,10 +140,12 @@ class Text:
 
 	@classmethod
 	def get_line_len(cls, line: str) -> int:
-		for style_code in cls.STYLE_TABLE.values():
-			line = line.replace(style_code, "")
+		escape_len = 0
 
-		return len(line)
+		for match in re.finditer(cls.ESCAPE_RE, line):
+			escape_len += match.end() - match.start()
+
+		return len(line) - escape_len
 
 	def get_rel_pos(self, line_num: int) -> tuple[int, int]:
 		screen_width, screen_height = self.__class__.Screen_size
