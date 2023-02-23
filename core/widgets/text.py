@@ -1,18 +1,18 @@
 import sys
 import re
 
-from .prelude import *
-from .anchor import *
+from ..prelude import *
+from ..mainloop import MainLoop
+from ..anchor import Anchor
+from ..renderable import Renderable
 
-from typing import Callable, List, Tuple
+from typing import List
 
-class Text:
-	instances: List['Text'] = []
-	Screen_size: Tuple[int, int] = get_screen_size()
-
+class Text(Renderable):
 	ESCAPE_RE = "\033\[\d{1,3}m"
 
 	STYLE_TABLE = {
+		"<r>": "\033[0m",
 		"</r>": "\033[0m",
 
 		"<b>": "\033[1m",
@@ -44,49 +44,15 @@ class Text:
 		"white": '7m',
 	}
 
-	def __init__(self, text: str, x: int = 0, y: int = 0, anchor: Anchor = Anchor.CENTER):
-		self.__class__.instances.append(self)
-		
+	def __init__(self, text: str, x: int = 0, y: int = 0, anchor: Anchor = Anchor.CENTER):		
+		super().__init__()
+
 		self.x = x
 		self.y = y
 		self.anchor = anchor
 		self.lines: List[str] = []
-		self.is_dirty = True
-
-		self.on_main_loop: List[Callable] = []
-		self.on_key_press: List[Callable[[bytes], any]] = []
 
 		self.set_text(text)
-
-	def add_main_loop_even(self, event: Callable):
-		self.on_main_loop.append(event)
-
-	def add_key_press_event(self, event: Callable[[bytes], any]):
-		self.on_key_press.append(event)
-
-	@classmethod
-	def mainloop(cls):
-		if get_screen_size() != cls.Screen_size:
-			cls.Screen_size = get_screen_size()
-			clear_screen()
-
-		should_flush = False
-		key_pressed = handle_input()
-
-		for instance in cls.instances:
-			if key_pressed != None:
-				for event in instance.on_key_press:
-					event(key_pressed)
-
-			for event in instance.on_main_loop:
-				event()
-
-			if not instance.is_dirty: continue
-
-			should_flush = True
-			instance.render()
-
-		if (should_flush): sys.stdout.flush()
 
 	def set_text(self, text: str):
 		self.set_dirty()
@@ -124,10 +90,6 @@ class Text:
 		self.x += x
 		self.y += y
 
-	def set_dirty(self):
-		self.clear()
-		self.is_dirty = True
-
 	def calculate_dimensions(self):
 		self.height = len(self.lines)
 		self.width = 0
@@ -147,8 +109,8 @@ class Text:
 
 		return len(line) - escape_len
 
-	def get_rel_pos(self, line_num: int) -> tuple[int, int]:
-		screen_width, screen_height = self.__class__.Screen_size
+	def get_line_pos(self, line_num: int) -> tuple[int, int]:
+		screen_width, screen_height = MainLoop.Screen_Size
 		line_width = self.get_line_len(self.lines[line_num])
 
 		if self.anchor == Anchor.UPPER_LEFT or self.anchor == Anchor.LEFT or self.anchor == Anchor.LOWER_LEFT:
@@ -181,7 +143,7 @@ class Text:
 
 	def print_internal(self, clear: bool = False):
 		for i, line in enumerate(self.lines):
-			(rel_x, rel_y) = self.get_rel_pos(i)
+			(rel_x, rel_y) = self.get_line_pos(i)
 
-			sys.stdout.write(f"\033[{rel_y};{rel_x}f")
+			set_cursor_pos(rel_x, rel_y)
 			sys.stdout.write(' ' * self.get_line_len(line) if clear else line)

@@ -1,58 +1,13 @@
-from time import time
+import traceback
 
-from core import *
+from core.prelude import *
+from core.widgets import *
 
-class Timer(Text):
-	def __init__(self, label: str = "{:0.2f}", x: int = 0, y: int = 0, anchor: Anchor = Anchor.CENTER):
-		super().__init__(label, x, y, anchor)
-
-		self.label = label
-		self.start_time = time()
-
-		self.add_main_loop_even(self.tick)
-
-	def tick(self):
-		self.set_text(self.label.format(time() - self.start_time))
-
-class MovingText(Text):
-	def __init__(self, text: str = "Moving Text", x: int = 0, y: int = 0, anchor: Anchor = Anchor.CENTER):
-		super().__init__(text, x, y, anchor)
-
-		self.add_key_press_event(self.handle_movement)
-
-	def handle_movement(self, key):
-		if key == b'\x00\x4d':
-			self.move(1, 0)
-		elif key == b'\x00\x4b':
-			self.move(-1, 0)
-		elif key == b'\x00\x50':
-			self.move(0, 1)
-		elif key == b'\x00\x48':
-			self.move(0, -1)
-
-class KeyDisplay(Text):
-	def __init__(self, label: str = "0x{}", x: int = 0, y: int = 0, anchor: Anchor = Anchor.CENTER, default_text: str = None):
-		if default_text == None:
-			default_text = label.format("00")
-
-		super().__init__(default_text, x, y, anchor)
-
-		self.label = label
-		self.add_key_press_event(self.on_press_callback)
-
-	def on_press_callback(self, key):
-		self.set_text(self.label.format(key.hex()))
-
-class Input(Text):
-	def __init__(self, label: str = "{}", x: int = 0, y: int = 0, anchor: Anchor = Anchor.CENTER):
-		super().__init__(label, x, y, anchor)
-
-		self.label = label
-
-		self.add_main_loop_even(self.display_typing)
-
-	def display_typing(self):
-		self.set_text(self.label.format(time() - self.start_time))
+from core import Anchor
+from core import MainLoop
+		
+def is_num(key: bytes) -> bool:
+	return key.isdigit()
 
 def main():
 	hide_cursor()
@@ -71,14 +26,26 @@ _\ \ (_) | |  | |_| | | | | (_| |  \ V /| \__ \ |_| | (_| | | \__ \ (_| | |_| | 
 
 	Text("<b><i><fg=red>RED TEXT</fg></i></b>\nhuh?\n<b>Bold</b> <i>Italics</i> <u>Underline</u> <s>Strikethrough</s>", anchor=Anchor.LOWER_CENTER)
 
+	input_text = InputField("Input: [{}]", y=5)
+	input_num = InputField("Num Input: [{}]", y=6, validate=is_num)
+
+	input_text.on_stop_input.subscribe(input_num.get_input)
+	input_text.get_input()
+
 	while True:
-		Text.mainloop()
+		MainLoop.mainloop()
 
 if __name__ == '__main__':
+	error = None
+
 	try:
 		main()
 	except KeyboardInterrupt:
 		pass
+	except BaseException as e:
+		error = traceback.format_exc()
 	finally:
-		show_cursor()
-		print("\n")
+		clean_exit()
+
+		if error != None:
+			print(f"-- Error!!! --\n\n{error}")

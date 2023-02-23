@@ -4,25 +4,39 @@ import msvcrt
 
 from typing import Tuple
 
+def set_cursor_pos(x: int, y: int):
+	sys.stdout.write(f"\033[{y};{x}f")
+
 def get_screen_size() -> Tuple[int, int]:
-	screen_size = os.get_terminal_size()
-	return (screen_size.columns + 1, screen_size.lines + 1)
+	Screen_Size = os.get_terminal_size()
+	return (Screen_Size.columns + 1, Screen_Size.lines + 1)
+
+def clean_exit():
+	set_cursor_pos(0, get_screen_size()[1])
+
+	reset_style()
+	show_cursor()
+	flush_screen()
+
+	print('\n')
+
+def flush_screen():
+	sys.stdout.flush()
 
 def reset_screen():
 	sys.stdout.write("\033c")
-	sys.stdout.flush()
+
+def reset_style():
+	sys.stdout.write("\033[0m")
 
 def clear_screen():
 	sys.stdout.write("\033[2J")
-	sys.stdout.flush()
     
 def show_cursor():
 	sys.stdout.write("\033[?25h")
-	sys.stdout.flush()
 
 def hide_cursor():
 	sys.stdout.write("\033[?25l")
-	sys.stdout.flush()
 
 def handle_input() -> bytes:
 	if not msvcrt.kbhit(): return None
