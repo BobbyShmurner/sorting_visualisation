@@ -3,37 +3,36 @@ import traceback
 from core.prelude import *
 from core.widgets import *
 
-from core import Anchor
 from core import MainLoop
-		
+
 def is_num(key: bytes) -> bool:
 	return key.isdigit()
 
-def main():
-	hide_cursor()
-	clear_screen()
-
-	MovingText(r"""<b><fg=green> __            _   _                     _                 _ _           _   _                 
+class TitleWindow(Window):
+	def create(self):
+		Text(self, r"""<b><fg=green> __            _   _                     _                 _ _           _   _                 
 / _\ ___  _ __| |_(_)_ __   __ _  /\   /(_)___ _   _  __ _| (_)___  __ _| |_(_) ___  _ __  ___ 
 \ \ / _ \| '__| __| | '_ \ / _` | \ \ / / / __| | | |/ _` | | / __|/ _` | __| |/ _ \| '_ \/ __|
 _\ \ (_) | |  | |_| | | | | (_| |  \ V /| \__ \ |_| | (_| | | \__ \ (_| | |_| | (_) | | | \__ \
 \__/\___/|_|   \__|_|_| |_|\__, |   \_/ |_|___/\__,_|\__,_|_|_|___/\__,_|\__|_|\___/|_| |_|___/
-                           |___/                                                               """)
-	
-	KeyDisplay("<b>[0x{}]</b>", default_text="<b>[Key Display]</b>", anchor=Anchor.LOWER_RIGHT)
+                           |___/                                                               """
+		)
+		
+		Text(self, "<b>Press <fg=green><u>Enter</u></fg> To Begin!</b>", y=5)
 
-	Timer("<b>Random Timer: <fg=cyan>{:0.2f}</fg></b>", anchor=Anchor.UPPER_CENTER)
+		input = InputField(self, "{}", y=10)
+		input.on_stop_input.subscribe(InputWindow().show)
+		input.get_input()
 
-	Text("<b><i><fg=red>RED TEXT</fg></i></b>\nhuh?\n<b>Bold</b> <i>Italics</i> <u>Underline</u> <s>Strikethrough</s>", anchor=Anchor.LOWER_CENTER)
+class InputWindow(Window):
+	def create(self):
+		Text(self, "Super cool text >:D")
 
-	input_text = InputField("Input: [{}]", y=5)
-	input_num = InputField("Num Input: [{}]", y=6, validate=is_num)
-
-	input_text.on_stop_input.subscribe(input_num.get_input)
-	input_text.get_input()
+def main():
+	TitleWindow().show()
 
 	while True:
-		MainLoop.mainloop()
+		if not MainLoop.mainloop(): break
 
 if __name__ == '__main__':
 	error = None
