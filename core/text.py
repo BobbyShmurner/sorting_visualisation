@@ -152,7 +152,7 @@ class Text:
 		line_width = self.get_line_len(self.lines[line_num])
 
 		if self.anchor == Anchor.UPPER_LEFT or self.anchor == Anchor.LEFT or self.anchor == Anchor.LOWER_LEFT:
-			x = self.x
+			x = self.x + 1
 		elif self.anchor == Anchor.UPPER_CENTER or self.anchor == Anchor.CENTER or self.anchor == Anchor.LOWER_CENTER:
 			x = screen_width // 2 - line_width // 2 + self.x
 		else:
@@ -165,26 +165,23 @@ class Text:
 		else:
 			y = screen_height + line_num - self.height - self.y
 
-		self.prev_screen_width = screen_width
-		self.prev_screen_height = screen_height
-
 		delta_x = min(max(x, 1), screen_width - self.width) - x
 		delta_y = min(max(y, line_num + 1), screen_height - self.height + line_num) - y
 
 		self.x += delta_x
 		self.y += delta_y
 
-		return (x + delta_x, y + delta_y)
+		return (x, y)
 
 	def render(self):
-		for i, line in enumerate(self.lines):
-			(rel_x, rel_y) = self.get_rel_pos(i)
-			sys.stdout.write(f"\033[{rel_y};{rel_x}f")
-			sys.stdout.write(line)
+		self.print_internal()
 
 	def clear(self):
+		self.print_internal(True)
+
+	def print_internal(self, clear: bool = False):
 		for i, line in enumerate(self.lines):
 			(rel_x, rel_y) = self.get_rel_pos(i)
+
 			sys.stdout.write(f"\033[{rel_y};{rel_x}f")
-			sys.stdout.write(' ' * self.get_line_len(line))
-		
+			sys.stdout.write(' ' * self.get_line_len(line) if clear else line)

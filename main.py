@@ -69,7 +69,7 @@ _\ \ (_) | |  | |_| | | | | (_| |  \ V /| \__ \ |_| | (_| | | \__ \ (_| | |_| | 
 
 	Timer("<b>Random Timer: <fg=cyan>{:0.2f}</fg></b>", anchor=Anchor.UPPER_CENTER)
 
-	Text("<b><i><fg=red>RED TEXT</fg></i></b>\n<b>Bold</b> <i>Italics</i> <u>Underline</u> <s>Strikethrough</s>", anchor=Anchor.LOWER_CENTER)
+	Text("<b><i><fg=red>RED TEXT</fg></i></b>\nhuh?\n<b>Bold</b> <i>Italics</i> <u>Underline</u> <s>Strikethrough</s>", anchor=Anchor.LOWER_CENTER)
 
 	while True:
 		Text.mainloop()
