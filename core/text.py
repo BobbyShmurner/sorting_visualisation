@@ -163,7 +163,7 @@ class Text:
 		elif self.anchor == Anchor.LEFT or self.anchor == Anchor.CENTER or self.anchor == Anchor.RIGHT:
 			y = screen_height // 2 - self.height // 2 + self.y + line_num
 		else:
-			y = screen_height - line_num - 1 - self.y
+			y = screen_height + line_num - self.height - self.y
 
 		self.prev_screen_width = screen_width
 		self.prev_screen_height = screen_height
