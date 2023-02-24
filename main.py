@@ -13,7 +13,7 @@ def none(key: bytes) -> bool:
 
 class TitleWindow(Window):
 	def create(self):
-		Text(self, r"""<b><fg=green> __            _   _                     _                 _ _           _   _                 
+		Text(self, r"""<b><bfg=green> __            _   _                     _                 _ _           _   _                 
 / _\ ___  _ __| |_(_)_ __   __ _  /\   /(_)___ _   _  __ _| (_)___  __ _| |_(_) ___  _ __  ___ 
 \ \ / _ \| '__| __| | '_ \ / _` | \ \ / / / __| | | |/ _` | | / __|/ _` | __| |/ _ \| '_ \/ __|
 _\ \ (_) | |  | |_| | | | | (_| |  \ V /| \__ \ |_| | (_| | | \__ \ (_| | |_| | (_) | | | \__ \
@@ -21,14 +21,14 @@ _\ \ (_) | |  | |_| | | | | (_| |  \ V /| \__ \ |_| | (_| | | \__ \ (_| | |_| | 
                            |___/                                                               """
 		)
 		
-		Text(self, "<b>Press <fg=green><u>Enter</u></fg> To Begin!</b>", y=5)
+		Text(self, "<b>Press <bfg=green><u>Enter</u></bfg> To Begin!</b>", y=5)
 
 		input = InputField(self, "{}", validate=none, y=10)
 		input.on_stop_input.subscribe(InputWindow().show)
 		input.get_input()
 
 class InputWindow(Window):
-	UNSORTED_BOX_LABEL = "<fg=black>[<b><fg=white>{}<fg=black></b>]</fg>"
+	UNSORTED_BOX_LABEL = "<bfg=black>[<b><fg=white>{}<bfg=black></b>]</bfg>"
 	SORTED_BOX_LABEL = "<b><fg=green>[<fg=cyan>{}<fg=green>]</fg></b>"
 	MIN_NUM_COUNT = 3
 
@@ -39,7 +39,7 @@ class InputWindow(Window):
 
 		self.status_text = Text(self, "<b>Please Enter The Digits You Wish To Sort</b>", y=3)
 
-		self.error_text = Text(self, f"<b><fg=red>You Must Enter At Least {InputWindow.MIN_NUM_COUNT} Number!</fg></b>", y=4)
+		self.error_text = Text(self, f"<b><fg=red>You Must Enter At Least {InputWindow.MIN_NUM_COUNT} Number{'s' if InputWindow.MIN_NUM_COUNT > 1 else ''}!</fg></b>", y=4)
 		self.error_text.set_active(False)
 
 		self.nums: List[int] = []
