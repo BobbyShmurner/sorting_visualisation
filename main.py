@@ -8,6 +8,9 @@ from core import MainLoop
 def is_num(key: bytes) -> bool:
 	return key.isdigit()
 
+def none(key: bytes) -> bool:
+	return False
+
 class TitleWindow(Window):
 	def create(self):
 		Text(self, r"""<b><fg=green> __            _   _                     _                 _ _           _   _                 
@@ -20,7 +23,7 @@ _\ \ (_) | |  | |_| | | | | (_| |  \ V /| \__ \ |_| | (_| | | \__ \ (_| | |_| | 
 		
 		Text(self, "<b>Press <fg=green><u>Enter</u></fg> To Begin!</b>", y=5)
 
-		input = InputField(self, "{}", y=10)
+		input = InputField(self, "{}", validate=none, y=10)
 		input.on_stop_input.subscribe(InputWindow().show)
 		input.get_input()
 

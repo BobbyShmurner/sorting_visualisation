@@ -75,7 +75,7 @@ class InputField(Text):
 	def on_key_press_callback(self, key: bytes):
 		if not self.typing: return
 
-		if (key == b'\x0d' or key == b'\x1b'): # Newline / Escape
+		if (key == b'\x0d'): # Newline
 			self.stop_input()
 			return
 		
