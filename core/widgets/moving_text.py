@@ -1,10 +1,11 @@
 from .text import Text
 from ..anchor import Anchor
 from ..mainloop import MainLoop
+from ..renderable import Renderable
 
 class MovingText(Text):
-	def __init__(self, text: str = "Moving Text", x: int = 0, y: int = 0, anchor: Anchor = Anchor.CENTER):
-		super().__init__(text, x, y, anchor)
+	def __init__(self, master: Renderable, text: str = "Moving Text", x: int = 0, y: int = 0, anchor: Anchor = Anchor.CENTER):
+		super().__init__(master, text, x, y, anchor)
 
 		MainLoop.On_Key_Press.subscribe(self.handle_movement)
 

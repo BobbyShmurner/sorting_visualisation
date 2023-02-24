@@ -44,8 +44,8 @@ class Text(Renderable):
 		"white": '7m',
 	}
 
-	def __init__(self, text: str, x: int = 0, y: int = 0, anchor: Anchor = Anchor.CENTER):		
-		super().__init__()
+	def __init__(self, matser: Renderable, text: str, x: int = 0, y: int = 0, anchor: Anchor = Anchor.CENTER):		
+		super().__init__(matser)
 
 		self.x = x
 		self.y = y
@@ -137,6 +137,10 @@ class Text(Renderable):
 
 	def render(self):
 		self.print_internal()
+
+	def set_dirty(self):
+		super().set_dirty()
+		self.clear()
 
 	def clear(self):
 		self.print_internal(True)

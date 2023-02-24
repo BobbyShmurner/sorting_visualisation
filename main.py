@@ -25,8 +25,27 @@ _\ \ (_) | |  | |_| | | | | (_| |  \ V /| \__ \ |_| | (_| | | \__ \ (_| | |_| | 
 		input.get_input()
 
 class InputWindow(Window):
+	UNSORTED_BOX_LABEL = "<fg=black>[<fg=white><b>{}</b><fg=black>]</fg>"
+	SORTED_BOX_LABEL = "<b><fg=green>[<fg=cyan>{}<fg=green>]</fg></b>"
+
 	def create(self):
-		Text(self, "Super cool text >:D")
+		Text(self, "<b>Please Enter The Digits You Wish To Sort:</b>")
+
+		self.input = InputField(self, InputWindow.UNSORTED_BOX_LABEL, y=3, validate=is_num)
+		self.input.on_stop_input.subscribe(self.setup_input_for_next_num)
+		self.input.get_input()
+
+	def setup_input_for_next_num(self):
+		if (self.input.data == ""): 
+			self.input.set_label(self.input.label[:-len(InputWindow.UNSORTED_BOX_LABEL) -1] + "{}")
+			if self.input.label == "{}":
+				self.input.set_label(InputWindow.UNSORTED_BOX_LABEL)
+				self.input.get_input()
+
+			return
+		
+		self.input.set_label(self.input.label.format(self.input.data) + ' ' + InputWindow.UNSORTED_BOX_LABEL)
+		self.input.get_input()
 
 def main():
 	TitleWindow().show()
