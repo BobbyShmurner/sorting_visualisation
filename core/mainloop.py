@@ -32,6 +32,8 @@ class MainLoop:
 			cls.Screen_Size = get_screen_size()
 			clear_screen()
 
+			Renderable.Ignore_Dirty = True
+
 		key_pressed = handle_input()
 		if key_pressed != None:
 			cls.On_Key_Press.invoke(key_pressed)
@@ -46,4 +48,5 @@ class MainLoop:
 
 		flush_screen()
 
+		Renderable.Ignore_Dirty = False
 		return (not cls.Exiting) and (len(cls.On_Main_Loop.subscribers) != 0)

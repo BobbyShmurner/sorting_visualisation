@@ -138,6 +138,9 @@ class Text(Renderable):
 	def render(self):
 		self.print_internal()
 
+	def hide(self):
+		self.clear()
+
 	def set_dirty(self):
 		super().set_dirty()
 		self.clear()

@@ -25,25 +25,35 @@ _\ \ (_) | |  | |_| | | | | (_| |  \ V /| \__ \ |_| | (_| | | \__ \ (_| | |_| | 
 		input.get_input()
 
 class InputWindow(Window):
-	UNSORTED_BOX_LABEL = "<fg=black>[<fg=white><b>{}</b><fg=black>]</fg>"
+	UNSORTED_BOX_LABEL = "<fg=black>[<b><fg=white>{}<fg=black></b>]</fg>"
 	SORTED_BOX_LABEL = "<b><fg=green>[<fg=cyan>{}<fg=green>]</fg></b>"
+	MIN_NUM_COUNT = 3
 
 	def create(self):
-		Text(self, "<b>Please Enter The Digits You Wish To Sort:</b>")
-
-		self.input = InputField(self, InputWindow.UNSORTED_BOX_LABEL, y=3, validate=is_num)
+		self.input = InputField(self, InputWindow.UNSORTED_BOX_LABEL, validate=is_num)
 		self.input.on_stop_input.subscribe(self.setup_input_for_next_num)
 		self.input.get_input()
 
+		self.status_text = Text(self, "<b>Please Enter The Digits You Wish To Sort</b>", y=3)
+
+		self.error_text = Text(self, f"<b><fg=red>You Must Enter At Least {InputWindow.MIN_NUM_COUNT} Number!</fg></b>", y=4)
+		self.error_text.set_active(False)
+
+		self.nums: List[int] = []
+
 	def setup_input_for_next_num(self):
+		self.error_text.set_active(False)
+
 		if (self.input.data == ""): 
-			self.input.set_label(self.input.label[:-len(InputWindow.UNSORTED_BOX_LABEL) -1] + "{}")
-			if self.input.label == "{}":
-				self.input.set_label(InputWindow.UNSORTED_BOX_LABEL)
+			if len(self.nums) < InputWindow.MIN_NUM_COUNT:
+				self.error_text.set_active(True)
 				self.input.get_input()
+			else:
+				self.input.set_label(self.input.label[:-len(InputWindow.UNSORTED_BOX_LABEL) -1] + "{}")
 
 			return
 		
+		self.nums.append(int(self.input.data))
 		self.input.set_label(self.input.label.format(self.input.data) + ' ' + InputWindow.UNSORTED_BOX_LABEL)
 		self.input.get_input()
 
